@@ -1,0 +1,38 @@
+scope: multiclass, excluding ['Flags'] -> 25 of 25 tasks (0 excluded by scope, not by failure)
+records=9375 errors=0 tasks=25 complete=25
+
+== tasks where 0.90 is outside a method's coverage range ==
+  J3           : 0 
+  PH-UNION-J3  : 0 
+  SPLIT-J3     : 0 
+
+== matched-coverage set size at 0.90 (negative = first is smaller) ==
+P1 J3 - PH-UNION-J3  (PRIMARY: aggregate then calibrate vs per-head union): n=25 mean diff=-0.023, rel=-1.6%, 95% CI [-0.040, -0.008], Wilcoxon p=0.0003182, smaller/tie/larger=22/1/2
+S1 J3 - SPLIT-J3     (CV+ vs standard split conformal): n=25 mean diff=-0.046, rel=-2.7%, 95% CI [-0.091, -0.013], Wilcoxon p=8.345e-07, smaller/tie/larger=23/0/2
+
+== Holm across the two pre-specified contrasts ==
+  P1: raw p=0.0003182, Holm p=0.0003182
+  S1: raw p=8.345e-07, Holm p=1.669e-06
+
+== accuracy check for P1 (same model, so accuracy is identical by construction) ==
+  max |acc(J3) - acc(PH-UNION-J3)| over tasks: 0.00e+00
+
+== coverage at alpha=0.10 (target 0.90) ==
+  J3           : mean=0.906 (dev +0.006), tasks with mean < 0.88: 0/25
+  PH-UNION-J3  : mean=0.940 (dev +0.040), tasks with mean < 0.88: 0/25
+  SPLIT-J3     : mean=0.905 (dev +0.005), tasks with mean < 0.88: 0/25
+
+== set structure at alpha=0.10 (mean over complete tasks) ==
+  J3           : singleton=0.696, empty=0.028
+  PH-UNION-J3  : singleton=0.608, empty=0.014
+  SPLIT-J3     : singleton=0.678, empty=0.029
+
+== compute time (mean seconds per fold) ==
+  J3           : fit=0.1727s, scoring=0.0332s
+  PH-UNION-J3  : fit=0.1727s, scoring=0.0332s
+  SPLIT-J3     : fit=0.0132s, scoring=0.0036s
+
+== decision (plan rules) ==
+  H1 aggregate-then-calibrate beats per-head union (P1): True
+  S1 CV+ beats split conformal (descriptive):            True
+  Note: S1 also differs in training data (90% vs 75%); it is not a clean comparison of calibration methods alone.
