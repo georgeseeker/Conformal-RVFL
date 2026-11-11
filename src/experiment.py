@@ -21,8 +21,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "src", "models"))
 
-from data_loader import load_uci_dataset, fold_preprocess, should_standardize  # noqa: E402
-from tasks import MULTICLASS_TASKS, GROUP  # noqa: E402
+from data_loader import (load_uci_dataset, fold_preprocess, should_standardize,  # noqa: E402
+                         MULTICLASS_TASKS, GROUP)
 from models.RVFLC import HeadedDeepRVFL3, CVPlusConformal  # noqa: E402
 from sklearn.model_selection import StratifiedKFold, train_test_split  # noqa: E402
 

@@ -13,6 +13,42 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 
 
 # ----------------------------
+# 本论文使用的 25 个多分类 UCI 任务（唯一来源）
+# 与 results/conformal.csv 完全一致：FGC 多分类列表去掉 Flags、LED、LRS。
+# ----------------------------
+MULTICLASS_TASKS = (
+    (1, "Abalone"),
+    (3, "Annealing"),
+    (193, "Cardiotocography_10classes"),
+    (19, "Car Evaluation"),
+    (26, "Connect-4"),
+    (33, "Dermatology"),
+    (39, "Ecoli"),
+    (242, "Energy Efficiency"),
+    (42, "Glass Identification"),
+    (44, "Hayes-Roth"),
+    (45, "Heart_cleveland"),           # 原生五类目标
+    (63, "lymphography"),
+    (69, "Molecular Biology"),
+    (76, "Nursery"),
+    (80, "Optical Recognition of Handwritten Digits"),
+    (91, "Soybean"),
+    (148, "Statlog (Shuttle)"),
+    (146, "Statlog (Landsat Satellite)"),
+    (149, "Statlog (Vehicle Silhouettes)"),
+    (212, "Vertebral Column"),
+    (107, "Waveform"),
+    (110, "Yeast"),
+    (109, "Wine"),
+    (186, "Wine Quality"),
+    (111, "Zoo"),
+)
+GROUP = "multiclass"                 # results CSV 的 group 列取值
+TASK_KEYS = frozenset((GROUP, u, n) for u, n in MULTICLASS_TASKS)
+assert len(MULTICLASS_TASKS) == 25 and len(TASK_KEYS) == 25
+
+
+# ----------------------------
 # 需要显式删除列的白名单：UCI ID → 列名列表
 # 这些列是标识符或元数据，不应作为特征
 # ----------------------------
@@ -358,9 +394,3 @@ def _clean_and_convert_features(X, feature_names, uci_id=None):
         raise ValueError(f"UCI ID {uci_id}: 所有特征列均被移除，无法继续处理！")
     
     return X_df.values, feature_names
-
-
-def get_classification_datasets():
-    """兼容旧接口：返回 (二分类列表, 多分类列表)。本项目只保留多分类，二分类恒为空。"""
-    from tasks import MULTICLASS_TASKS
-    return [], list(MULTICLASS_TASKS)

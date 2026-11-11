@@ -25,10 +25,10 @@ METHODS = ["J3", "PH-UNION-J3", "SPLIT-J3"]
 # Must match experiment.SEEDS (five draws from 1..10000). Old rows with seeds 30-39 are ignored.
 SEEDS = [1618, 3979, 6187, 7333, 8443]
 N_EXPECT = len(SEEDS) * 5
-# Scope: exactly the 25 multiclass tasks of tasks.MULTICLASS_TASKS, matched on (group, uci_id, task).
+# Scope: exactly the 25 multiclass tasks of data_loader.MULTICLASS_TASKS, matched on (group, uci_id, task).
 # Any other rows that may exist in a CSV (old binary/Flags runs) are listed as out of scope, not dropped.
 sys.path.insert(0, os.path.join(ROOT, "src"))
-from tasks import TASK_KEYS  # noqa: E402
+from data_loader import TASK_KEYS  # noqa: E402
 
 CONTRASTS = [
     ("P1 J3 - PH-UNION-J3  (PRIMARY: aggregate then calibrate vs per-head union)", "J3", "PH-UNION-J3"),
@@ -91,7 +91,7 @@ def main():
     all_tasks = sorted({(r["group"], r["uci_id"], r["task"]) for r in rows})
     in_scope = [t for t in all_tasks if t in TASK_KEYS]
     out_of_scope = [t for t in all_tasks if t not in TASK_KEYS]
-    print(f"scope: the {len(TASK_KEYS)} multiclass tasks of src/tasks.py "
+    print(f"scope: the {len(TASK_KEYS)} multiclass tasks of src/data_loader.py "
           f"-> {len(in_scope)} of {len(all_tasks)} tasks in CSV "
           f"({len(out_of_scope)} out of scope, not by failure{': ' + str(out_of_scope) if out_of_scope else ''})")
     missing = sorted(TASK_KEYS - set(all_tasks))

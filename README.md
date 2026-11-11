@@ -7,7 +7,7 @@
 
 实验只做 **25 个多分类 UCI 任务**。
 
-## 保留的 25 个任务（唯一来源：`src/tasks.py`）
+## 保留的 25 个任务（唯一来源：`src/data_loader.py`）
 Abalone(1)、Annealing(3)、Cardiotocography_10classes(193)、Car Evaluation(19)、Connect-4(26)、Dermatology(33)、Ecoli(39)、
 Energy Efficiency(242)、Glass Identification(42)、Hayes-Roth(44)、Heart_cleveland(45，原生五类)、lymphography(63)、Molecular Biology(69)、
 Nursery(76)、Optical Recognition of Handwritten Digits(80)、Soybean(91)、Statlog (Shuttle)(148)、Statlog (Landsat Satellite)(146)、
@@ -34,7 +34,7 @@ python src/main.py                    # 交互式入口；选 3 只做汇总
 ## 结果
 - `results/conformal.csv`：原始结果，9375 行，正好是这 25 个任务 × 5 个种子 × 5 折 × 3 种方法 × 5 个 α，没有错误行。
 - `results/analysis.txt`：原分析输出，保持不变。
-- `analyze.py` 现在会显式筛选到 `src/tasks.py` 里的 25 个任务。CSV 中若有其他任务的行，会被列为"不在范围内"，不会被删除。
+- `analyze.py` 现在会显式筛选到 `src/data_loader.py` 里的 25 个任务。CSV 中若有其他任务的行，会被列为"不在范围内"，不会被删除。
 
 ## 2026-11-11 清理说明
 清理时只删去了无用代码和数据，没有改动任务定义、标签、协议、种子、模型或算法。
@@ -43,7 +43,7 @@ python src/main.py                    # 交互式入口；选 3 只做汇总
 - 二分类任务清单，以及只服务二分类的强制二值化分支（这 25 个任务一直以 `force_binary=False` 运行，这个分支从未被执行）。
 - MONK、LED Display、Low Resolution Spectrometer 的加载函数。
 - 回归相关的全部代码：UCI 回归处理、ARFF 回归加载与配置、回归任务清单。
-- `experiment.py` 中的 `FIXED_PARTITION_IDS`、`SCOPE_GROUP`、`EXCLUDE_TASKS`（Flags）筛选逻辑，现在直接使用 `src/tasks.py`。
+- `experiment.py` 中的 `FIXED_PARTITION_IDS`、`SCOPE_GROUP`、`EXCLUDE_TASKS`（Flags）筛选逻辑，现在直接使用 `data_loader.MULTICLASS_TASKS`。
 - ID 表中只属于已删任务的条目：Musk、Flags、Parkinsons 的列与目标设置，以及二分类组的免标准化条目。
 
 **删除的数据（35 个文件，约 18 MB）**
