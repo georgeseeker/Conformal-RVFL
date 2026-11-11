@@ -18,13 +18,11 @@ import argparse
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data")
-os.chdir(DATA)          # data_loader.CACHE_DIR is the relative "dataset_cache"
 sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "src", "models"))
 
-from data_loader import (load_uci_dataset, get_classification_datasets,  # noqa: E402
-                         fold_preprocess, should_standardize)
+from data_loader import load_uci_dataset, fold_preprocess, should_standardize  # noqa: E402
+from tasks import MULTICLASS_TASKS, GROUP  # noqa: E402
 from models.RVFLC import HeadedDeepRVFL3, CVPlusConformal  # noqa: E402
 from sklearn.model_selection import StratifiedKFold, train_test_split  # noqa: E402
 
@@ -34,7 +32,6 @@ SEEDS = [1618, 3979, 6187, 7333, 8443]
 N_FOLDS = 5
 CAL_FRAC = 0.25
 CV_FOLDS = 10
-FIXED_PARTITION_IDS = {70, -1, -2}      # MONK-1/2/3, LED, LRS
 N_HIDDEN, LAMDA = 50, 0.1
 DEVICE = "cuda"
 RESULTS_DIR = os.path.join(ROOT, "results")
@@ -43,20 +40,11 @@ FIELDS = ["group", "uci_id", "task", "seed", "fold", "method", "n", "alpha", "K"
           "n_cal", "n_unseen", "acc", "cover", "size", "size_q90", "frac_single", "frac_empty",
           "t_fit", "t_pv", "error"]
 METHODS = ["J3", "PH-UNION-J3", "SPLIT-J3"]
-# Multiclass only. Flags is excluded: the per-head union never brackets coverage 0.90 on the
-# alpha grid, so matched-coverage interpolation is undefined. Set SCOPE_GROUP = None to enumerate
-# both groups again (needs re-download of binary caches); Flags stays excluded either way.
-SCOPE_GROUP = "multiclass"
-EXCLUDE_TASKS = {"Flags"}
 
 
 def task_list(names=None):
-    binary, multi = get_classification_datasets()
-    tasks = [(u, n, "binary") for u, n in binary] + [(u, n, "multiclass") for u, n in multi]
-    core = [t for t in tasks
-            if t[0] not in FIXED_PARTITION_IDS
-            and t[1] not in EXCLUDE_TASKS
-            and (SCOPE_GROUP is None or t[2] == SCOPE_GROUP)]
+    """The 25 multiclass tasks of tasks.MULTICLASS_TASKS (optionally filtered by name)."""
+    core = [(u, n, GROUP) for u, n in MULTICLASS_TASKS]
     if names:
         return [t for t in core if t[1] in names]
     return core
@@ -190,8 +178,7 @@ def run(out, seeds, names=None):
             writer.writeheader()
         for seed in seeds:
             for uci_id, name, group in tasks:
-                X, y, _, _ = load_uci_dataset(uci_id, name, task="classification",
-                                              force_binary=(group == "binary"))
+                X, y, _, _ = load_uci_dataset(uci_id, name)
                 y = np.asarray(y).ravel()
                 std = should_standardize(uci_id)
                 skf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=42)

@@ -8,6 +8,7 @@ Reads results/conformal.csv.
 import collections
 import csv
 import os
+import sys
 
 import numpy as np
 from scipy.stats import spearmanr, wilcoxon
@@ -24,11 +25,10 @@ METHODS = ["J3", "PH-UNION-J3", "SPLIT-J3"]
 # Must match experiment.SEEDS (five draws from 1..10000). Old rows with seeds 30-39 are ignored.
 SEEDS = [1618, 3979, 6187, 7333, 8443]
 N_EXPECT = len(SEEDS) * 5
-# Multiclass only. Binary sets take at most two elements, so the union-vs-aggregate contrast
-# has almost no room. Flags is filtered because conformal.csv still contains its original rows:
-# with 194 rows and 8 classes the union never reaches coverage 0.90 inside the alpha grid.
-SCOPE_GROUP = "multiclass"
-EXCLUDE_TASKS = {"Flags"}
+# Scope: exactly the 25 multiclass tasks of tasks.MULTICLASS_TASKS, matched on (group, uci_id, task).
+# Any other rows that may exist in a CSV (old binary/Flags runs) are listed as out of scope, not dropped.
+sys.path.insert(0, os.path.join(ROOT, "src"))
+from tasks import TASK_KEYS  # noqa: E402
 
 CONTRASTS = [
     ("P1 J3 - PH-UNION-J3  (PRIMARY: aggregate then calibrate vs per-head union)", "J3", "PH-UNION-J3"),
@@ -89,11 +89,14 @@ def main():
             agg[key][f].append(r[f])
 
     all_tasks = sorted({(r["group"], r["uci_id"], r["task"]) for r in rows})
-    in_scope = [t for t in all_tasks
-                if (SCOPE_GROUP is None or t[0] == SCOPE_GROUP) and t[2] not in EXCLUDE_TASKS]
-    print(f"scope: {SCOPE_GROUP or 'all tasks'}, excluding {sorted(EXCLUDE_TASKS) or 'none'} "
-          f"-> {len(in_scope)} of {len(all_tasks)} tasks "
-          f"({len(all_tasks) - len(in_scope)} excluded by scope, not by failure)")
+    in_scope = [t for t in all_tasks if t in TASK_KEYS]
+    out_of_scope = [t for t in all_tasks if t not in TASK_KEYS]
+    print(f"scope: the {len(TASK_KEYS)} multiclass tasks of src/tasks.py "
+          f"-> {len(in_scope)} of {len(all_tasks)} tasks in CSV "
+          f"({len(out_of_scope)} out of scope, not by failure{': ' + str(out_of_scope) if out_of_scope else ''})")
+    missing = sorted(TASK_KEYS - set(all_tasks))
+    if missing:
+        print(f"WARNING: kept tasks absent from CSV: {missing}")
     complete = [t for t in in_scope
                 if all(len(agg[(t, m, a)]["cover"]) == N_EXPECT for m in METHODS for a in ALPHAS)]
     print(f"records={len(rows)} errors={n_err} tasks={len(all_tasks)} complete={len(complete)}")
