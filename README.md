@@ -95,7 +95,8 @@ python src/main.py                    # 交互式入口：主实验 / 指定任�
 
 - 匹配 90% 覆盖：aggregate 1.323，union 1.347（差 −0.023，−1.6%，22/1/2，Holm $p=3.2\times10^{-4}$）；split 1.369（差 −0.046，−2.7%，23/0/2，Holm $p=1.7\times10^{-6}$）。
 - 平均准确率：aggregate 与 union 均为 0.831（任务范围 0.555–0.993），split 为 0.827。
-- $\alpha=0.10$ 时空集比例：aggregate 2.8%，union 1.4%。
+- 空集：$\alpha=0.10$ 时 aggregate 2.8%、union 1.4%（union 的覆盖率也更高）；覆盖率对齐时（aggregate $\alpha=0.10$，覆盖 0.906，集合 1.332；union $\alpha=0.15$，覆盖 0.907，集合 1.353）两者分别为 2.80% 与 2.76%。
+- CV+ 界：按最小折长 $\lfloor n/10\rfloor$ 计算，$\alpha=0.10$ 时 0.71–0.80，$\alpha=0.05$ 时 0.81–0.90；$\alpha=0.10$ 下每题实测覆盖比界至少高 0.10。
 
 ## 文件
 

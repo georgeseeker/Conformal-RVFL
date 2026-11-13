@@ -21,6 +21,7 @@ ALPHA_REF = 0.10
 ACC_TOL = 0.01
 N_BOOT = 10000
 ALPHAS = [0.05, 0.10, 0.15, 0.20, 0.30]
+K_FOLDS = 10
 METHODS = ["J3", "PH-UNION-J3", "SPLIT-J3"]
 # Must match experiment.SEEDS (five draws from 1..10000). Old rows with seeds 30-39 are ignored.
 SEEDS = [1618, 3979, 6187, 7333, 8443]
@@ -85,7 +86,7 @@ def main():
         if r.get("seed") not in SEEDS:
             continue
         key = ((r["group"], r["uci_id"], r["task"]), r["method"], r["alpha"])
-        for f in ("cover", "size", "acc", "t_fit", "t_pv", "frac_single", "frac_empty"):
+        for f in ("cover", "size", "acc", "t_fit", "t_pv", "frac_single", "frac_empty", "n_tr"):
             agg[key][f].append(r[f])
 
     all_tasks = sorted({(r["group"], r["uci_id"], r["task"]) for r in rows})
@@ -166,6 +167,27 @@ def main():
         fs = np.mean([np.mean(agg[(t, m, ALPHA_REF)]["frac_single"]) for t in complete])
         fe = np.mean([np.mean(agg[(t, m, ALPHA_REF)]["frac_empty"]) for t in complete])
         print(f"  {m:13s}: singleton={fs:.3f}, empty={fe:.3f}")
+
+    print("\n== empty sets at matched coverage (aggregate alpha=0.10 vs union alpha=0.15) ==")
+    for m, a in (("J3", 0.10), ("PH-UNION-J3", 0.15)):
+        cs = np.mean([cov(t, m, a) for t in complete])
+        fs = np.mean([np.mean(agg[(t, m, a)]["frac_single"]) for t in complete])
+        fe = np.mean([np.mean(agg[(t, m, a)]["frac_empty"]) for t in complete])
+        print(f"  {m:13s} alpha={a:.2f}: coverage={cs:.4f}, singleton={fs:.4f}, empty={fe:.4f}")
+
+    def cv_bound(t, a):
+        # Eq. (6) with n/K replaced by the smallest stratified fold size.
+        n = float(np.mean(agg[(t, "J3", a)]["n_tr"]))
+        mc = int(np.floor(n / K_FOLDS))
+        pen = min(2 * (1 - 1 / K_FOLDS) / (mc + 1), (1 - K_FOLDS / n) / (K_FOLDS + 1))
+        return 1 - 2 * a - pen
+
+    print("\n== CV+ bound of Eq. (6) at the smallest fold size ==")
+    for a in (0.10, 0.05):
+        bs = [cv_bound(t, a) for t in complete]
+        print(f"  alpha={a:.2f}: bound {min(bs):.3f}-{max(bs):.3f} over {len(bs)} tasks")
+    margins = [cov(t, "J3", ALPHA_REF) - cv_bound(t, ALPHA_REF) for t in complete]
+    print(f"  smallest margin (coverage - bound) at alpha={ALPHA_REF:.2f}: {min(margins):+.3f}")
 
     print("\n== compute time (mean seconds per fold) ==")
     for m in METHODS:
